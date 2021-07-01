@@ -2,6 +2,7 @@
 nextflow.enable.dsl=2
 
 process vcfConvert {
+    container 'quay.io/biocontainers/snpeff:5.0--hdfd78af_1'
     cpus 1
     memory '1 GB'
     publishDir params.outdir
