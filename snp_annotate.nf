@@ -7,7 +7,7 @@ process vcfConvert {
     publishDir params.outdir
 
     input:
-    tuple path(converted_vcf), val(vcfID)
+    tuple path(vcf), val(vcfID)
     //vcfID will be retained from input to output 
 
     output:
