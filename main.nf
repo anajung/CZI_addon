@@ -76,9 +76,10 @@ process pangolin {
     output:
     path 'pangolin_lineage.csv'
 
+    //pangolin --usher combined.fa --outfile usher_Pangolin_lineage.csv
     shell:
     '''
-    pangolin --usher !{combined_fa} pangolin_lineage.csv
+    pangolin --usher !{combined_fa} --outfile pangolin_lineage.csv
     '''
 }
 
@@ -126,7 +127,7 @@ workflow {
     vcfConvert(vcfdata)
     snpEff(vcfConvert.out.vcf_converted)
     snpSift(snpEff.out.vcf_annotated)
-    
+
     combinedfadata=channel.fromPath( params.combinedfa )
     pangolin(combinedfadata)
     nextClade(combinedfadata)
