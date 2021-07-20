@@ -5,7 +5,7 @@ process vcfConvert {
     container 'quay.io/biocontainers/snpeff:5.0--hdfd78af_1'
     cpus 1
     memory '1 GB'
-    publishDir params.outdir
+    publishDir params.outdir+'/snpEff_results'
 
     input:
     tuple path(vcf), val(vcfID)
@@ -25,7 +25,7 @@ process snpEff {
     container 'quay.io/biocontainers/snpeff:5.0--hdfd78af_1'
     cpus 1
     memory '1 GB'
-    publishDir params.outdir
+    publishDir params.outdir+'/snpEff_results'
 
     input:
     tuple path(converted_vcf), val(vcfID)
@@ -81,7 +81,7 @@ process pangolin {
 }
 
 process nextClade {
-    container 'neherlab/nextclade:latest'
+    container 'neherlab/nextclade:0.14.4-stretch'
     cpus 1
     memory '1 GB'
     publishDir params.outdir
@@ -90,10 +90,9 @@ process nextClade {
     path combined_fa
 
     output:
-    path 'nextclade_lineage.tsv'
+    path '*nextclade_lineage.tsv'
 
     shell:
-    //docker run --rm -u 1000 --volume="$PWD:/seq" neherlab/nextclade nextclade --input-fasta '/seq/combined.fa' --output-tsv '/seq/nextclade_lineage.tsv'
     '''
     nextclade --input-fasta !{combined_fa} --output-tsv nextclade_lineage.tsv
     '''
@@ -160,8 +159,8 @@ workflow {
     snpSift(snpEff.out.vcf_annotated)
     combinedfadata=channel.fromPath( params.combinedfa )
     pangolin(combinedfadata)
-    nextclade_lineage=channel.fromPath( params.nextclade )
-    joinLineage(pangolin.out, nextclade_lineage)
+    nextClade(combinedfadata)
+    joinLineage(pangolin.out, nextClade.out)
     filter_fa(combinedfadata)
     augur(filter_fa.out)
 
