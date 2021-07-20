@@ -154,18 +154,14 @@ process augur {
 }
 
 workflow {
-    //vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
-    //vcfConvert(vcfdata)
-    //snpEff(vcfConvert.out.vcf_converted)
-    //snpSift(snpEff.out.vcf_annotated)
-
+    vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
+    vcfConvert(vcfdata)
+    snpEff(vcfConvert.out.vcf_converted)
+    snpSift(snpEff.out.vcf_annotated)
     combinedfadata=channel.fromPath( params.combinedfa )
-    //pangolin(combinedfadata)
-    //nextClade(combinedfadata)
-    //pangolin_lineage=channel.fromPath('/Users/anajung/Documents/HandleyLab/ana_Pangolin_lineage.csv')
-    //nextclade_lineage=channel.fromPath('/Users/anajung/Documents/HandleyLab/ana_nextclade_lineage.tsv')
-    //python=channel.fromPath('/Users/anajung/Documents/HandleyLab/scripts/CZI_addon/join_lineage.py')
-    //joinLineage(pangolin_lineage, nextclade_lineage)
+    pangolin(combinedfadata)
+    nextclade_lineage=channel.fromPath( params.nextclade )
+    joinLineage(pangolin.out, nextclade_lineage)
     filter_fa(combinedfadata)
     augur(filter_fa.out)
 
