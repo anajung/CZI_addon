@@ -43,8 +43,6 @@ process snpEff {
     '''
 }
 
-//field_type = params.fields
-
 process snpSift {
     container 'quay.io/biocontainers/snpsift:4.3.1t--hdfd78af_3'
     cpus 1
@@ -74,9 +72,8 @@ process pangolin {
     path combined_fa
 
     output:
-    path 'pangolin_lineage.csv'
+    path '*_lineage.csv'
 
-    //pangolin --usher combined.fa --outfile usher_Pangolin_lineage.csv
     shell:
     '''
     pangolin --usher !{combined_fa} --outfile pangolin_lineage.csv
@@ -84,7 +81,7 @@ process pangolin {
 }
 
 process nextClade {
-    container 'neherlab/nextclade'
+    container 'neherlab/nextclade:latest'
     cpus 1
     memory '1 GB'
     publishDir params.outdir
@@ -93,47 +90,83 @@ process nextClade {
     path combined_fa
 
     output:
-    path 'nextclade_lineage.csv'
+    path 'nextclade_lineage.tsv'
 
     shell:
+    //docker run --rm -u 1000 --volume="$PWD:/seq" neherlab/nextclade nextclade --input-fasta '/seq/combined.fa' --output-tsv '/seq/nextclade_lineage.tsv'
     '''
-    nextclade --input-fasta !{combined_fa} --output-csv nextclade_lineage.csv
+    nextclade --input-fasta !{combined_fa} --output-tsv nextclade_lineage.tsv
     '''
 }
 
 process joinLineage {
-    container 'amancevice/pandas'
+    container 'anabugseq/pandas:latest'
     cpus 1
     memory '1 GB'
     publishDir params.outdir
 
     input:
-    path pangolin_file
-    path nextclade_file
-    path python
+    path pangolin_lineage
+    path nextclade_lineage
 
     output:
     path 'joined_lineage.csv'
     //must fix this big thing...
+
     shell:
-    '''
-    python join_lineage.py
-    '''
+    template 'join_lineage.py'
 
 }
 
+process filter_fa {
+    container 'quay.io/biocontainers/biopython:1.78'
+    cpus 1
+    memory '1 GB'
+    publishDir params.outdir
+
+    input:
+    path combinedfadata
+
+    output:
+    path '*.fa'
+
+    shell:
+    template 'filter_fasta.py'
+}
+
+process augur {
+    container 'anajung/nextstrain'
+    cpus 1
+    memory '1 GB'
+    publishDir params.outdir
+
+    input:
+    path filtered_fa
+
+    output:
+    path '*.nwk'
+
+    shell:
+    '''
+    augur align -s !{filtered_fa}
+    augur tree -a alignment.fasta -o tree.nwk
+    '''
+}
+
 workflow {
-    vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
-    vcfConvert(vcfdata)
-    snpEff(vcfConvert.out.vcf_converted)
-    snpSift(snpEff.out.vcf_annotated)
+    //vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
+    //vcfConvert(vcfdata)
+    //snpEff(vcfConvert.out.vcf_converted)
+    //snpSift(snpEff.out.vcf_annotated)
 
     combinedfadata=channel.fromPath( params.combinedfa )
-    pangolin(combinedfadata)
-    nextClade(combinedfadata)
-    //pangolin_file=channel.fromPath('/Users/anajung/Documents/HandleyLab/ana_Pangolin_lineage.csv')
-    //nextclade_file=channel.fromPath('/Users/anajung/Documents/HandleyLab/ana_nextclade_lineage.tsv')
+    //pangolin(combinedfadata)
+    //nextClade(combinedfadata)
+    //pangolin_lineage=channel.fromPath('/Users/anajung/Documents/HandleyLab/ana_Pangolin_lineage.csv')
+    //nextclade_lineage=channel.fromPath('/Users/anajung/Documents/HandleyLab/ana_nextclade_lineage.tsv')
     //python=channel.fromPath('/Users/anajung/Documents/HandleyLab/scripts/CZI_addon/join_lineage.py')
-    //joinLineage(python, pangolin_file, nextclade_file)
+    //joinLineage(pangolin_lineage, nextclade_lineage)
+    filter_fa(combinedfadata)
+    augur(filter_fa.out)
 
 }

@@ -64,6 +64,42 @@ process snpSift {
     
 }
 
+process pangolin {
+    container 'staphb/pangolin'
+    cpus 1
+    memory '1 GB'
+    publishDir params.outdir
+
+    input:
+    path combined_fa
+
+    output:
+    path 'pangolin_lineage.csv'
+
+    shell:
+    '''
+    pangolin !{combined_fa} pangolin_lineage.csv
+    '''
+}
+
+process nextClade {
+    container 'neherlab/nextclade'
+    cpus 1
+    memory '1 GB'
+    publishDir params.outdir
+
+    input:
+    path combined_fa
+
+    output:
+    path 'nextclade_lineage.csv'
+
+    shell:
+    '''
+    nextclade --input-fasta !{combined_fa} --output-csv nextclade_lineage.csv
+    '''
+}
+
 // process other {
 //     shell:
         // if(field_type == 'CZ')
