@@ -94,7 +94,7 @@ process nextClade {
 
     shell:
     '''
-    nextclade --input-fasta !{combined_fa} --output-tsv nextclade_lineage.tsv
+    nextclade -i !{combined_fa} -t nextclade_lineage.tsv
     '''
 }
 
