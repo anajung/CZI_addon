@@ -153,7 +153,7 @@ process augur {
 }
 
 workflow variant_annotation {
-    vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
+    //vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
     take:
         vcfdata
     main:
