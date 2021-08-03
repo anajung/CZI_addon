@@ -153,10 +153,10 @@ process augur {
 
 workflow {
     vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
+    combinedfadata=channel.fromPath( params.combinedfa ).collect()
     vcfConvert(vcfdata)
     snpEff(vcfConvert.out.vcf_converted)
     snpSift(snpEff.out.vcf_annotated)
-    combinedfadata=channel.fromPath( params.combinedfa )
     pangolin(combinedfadata)
     nextClade(combinedfadata)
     joinLineage(pangolin.out, nextClade.out)
