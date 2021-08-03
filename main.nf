@@ -2,7 +2,7 @@
 nextflow.enable.dsl=2
 
 process vcfConvert {
-    container 'quay.io/biocontainers/snpeff:5.0--hdfd78af_1'
+    container 'anajung/pandas'
     cpus 1
     memory '1 GB'
     publishDir params.outdir+'/snpEff_results'
@@ -94,12 +94,12 @@ process nextClade {
 
     shell:
     '''
-    nextclade -i !{combined_fa} -t nextclade_lineage.tsv
+    nextclade --input-fasta !{combined_fa} --output-tsv nextclade_lineage.tsv
     '''
 }
 
 process joinLineage {
-    container 'anabugseq/pandas:latest'
+    container 'anajung/pandas'
     cpus 1
     memory '1 GB'
     publishDir params.outdir
@@ -110,7 +110,7 @@ process joinLineage {
 
     output:
     path 'joined_lineage.csv'
-    //must fix this big thing...
+    path 'filtered_joined_lineage.csv'
 
     shell:
     template 'join_lineage.py'
@@ -121,7 +121,6 @@ process filter_fa {
     container 'quay.io/biocontainers/biopython:1.78'
     cpus 1
     memory '1 GB'
-    publishDir params.outdir
 
     input:
     path combinedfadata
@@ -152,17 +151,12 @@ process augur {
     '''
 }
 
-workflow variant_annotation {
-    vcfdata=Channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
+workflow {
+    vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
     vcfConvert(vcfdata)
     snpEff(vcfConvert.out.vcf_converted)
     snpSift(snpEff.out.vcf_annotated)
-}
-
-
-
-workflow {
-    combinedfadata=Channel.fromPath( params.combinedfa ).collect()
+    combinedfadata=channel.fromPath( params.combinedfa )
     pangolin(combinedfadata)
     nextClade(combinedfadata)
     joinLineage(pangolin.out, nextClade.out)
