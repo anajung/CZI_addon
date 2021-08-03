@@ -153,7 +153,7 @@ process augur {
 }
 
 workflow variant_annotation {
-    vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
+    vcfdata=Channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
     vcfConvert(vcfdata)
     snpEff(vcfConvert.out.vcf_converted)
     snpSift(snpEff.out.vcf_annotated)
@@ -161,15 +161,11 @@ workflow variant_annotation {
 
 
 
-workflow lineage_tree {
+workflow {
+    combinedfadata=Channel.fromPath( params.combinedfa ).collect()
     pangolin(combinedfadata)
     nextClade(combinedfadata)
     joinLineage(pangolin.out, nextClade.out)
     filter_fa(combinedfadata)
     augur(filter_fa.out)
-}
-
-workflow {
-    combinedfadata=channel.fromPath( params.combinedfa ).collect()
-    lineage_tree(combinedfadata)
 }
