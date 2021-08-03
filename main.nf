@@ -16,10 +16,10 @@ def helpMessage() {
     """.stripIndent()
 }
 
-if (params.help) workflow {
-    helpMessage()
-    exit 0
-}
+// if (params.help) workflow {
+//     helpMessage()
+//     exit 0
+// }
 
 process vcfConvert {
     container 'anajung/pandas'
