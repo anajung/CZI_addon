@@ -1,6 +1,26 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+def helpMessage() {
+  log.info"""
+    Usage:
+    The typical command for running the pipeline is as follows:
+    nextflow run anajung/CZI_addon --combinedfa 'combined.fa' --vcf 'sample-variants/*.vcf.gz' --outdir './out'
+
+    Mandatory arguments:
+    --combinedfa                Path to combined FASTA, must be in quotes
+    --outdir                    Specify path to output directory
+
+    Optional arguments:
+    --vcf                       Path to .vcf.gz's if variant annotation workflow is wanted
+    """.stripIndent()
+}
+
+if (params.help) workflow {
+    helpMessage()
+    exit 0
+}
+
 process vcfConvert {
     container 'anajung/pandas'
     cpus 1
@@ -151,12 +171,15 @@ process augur {
     '''
 }
 
+vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
+combinedfadata=channel.fromPath( params.combinedfa ).collect()
+
+
 workflow {
-    vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
-    combinedfadata=channel.fromPath( params.combinedfa ).collect()
-    vcfConvert(vcfdata)
-    snpEff(vcfConvert.out.vcf_converted)
-    snpSift(snpEff.out.vcf_annotated)
+    if ( params.vcf )
+        vcfConvert(vcfdata)
+        snpEff(vcfConvert.out.vcf_converted)
+        snpSift(snpEff.out.vcf_annotated)
     pangolin(combinedfadata)
     nextClade(combinedfadata)
     joinLineage(pangolin.out, nextClade.out)
