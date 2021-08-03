@@ -162,8 +162,10 @@ workflow variant_annotation {
         snpSift(snpEff.out.vcf_annotated)
 }
 
+combinedfadata=channel.fromPath( params.combinedfa ).collect()
+
 workflow lineage_tree {
-    combinedfadata=channel.fromPath( params.combinedfa ).collect()
+
     take:
         combinedfadata
     main:
@@ -175,6 +177,5 @@ workflow lineage_tree {
 }
 
 workflow {
-    variant_annotation(vcfdata)
     lineage_tree(combinedfadata)
 }
