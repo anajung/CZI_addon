@@ -152,10 +152,8 @@ process augur {
     '''
 }
 
-vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
-combinedfadata=channel.fromPath( params.combinedfa ).collect()
-
 workflow variant_annotation {
+    vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
     take:
         vcfdata
     main:
@@ -165,6 +163,7 @@ workflow variant_annotation {
 }
 
 workflow lineage_tree {
+    combinedfadata=channel.fromPath( params.combinedfa ).collect()
     take:
         combinedfadata
     main:
