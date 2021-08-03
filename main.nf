@@ -25,7 +25,7 @@ process pangolin {
     container 'staphb/pangolin'
     cpus 1
     memory '1 GB'
-    publishDir params.outdir
+    publishDir params.outdir, mode: 'copy'
 
     input:
     path combined_fa
@@ -44,7 +44,7 @@ process nextClade {
     container 'anajung/nextclade'
     cpus 1
     memory '1 GB'
-    publishDir params.outdir
+    publishDir params.outdir, mode: 'copy'
 
     input:
     path combined_fa
@@ -62,7 +62,7 @@ process joinLineage {
     container 'anajung/pandas'
     cpus 1
     memory '1 GB'
-    publishDir params.outdir
+    publishDir params.outdir, mode: 'copy'
 
     input:
     path pangolin_lineage
@@ -96,7 +96,7 @@ process augur {
     container 'anajung/nextstrain'
     cpus 1
     memory '1 GB'
-    publishDir params.outdir
+    publishDir params.outdir, mode: 'copy'
 
     input:
     path filtered_fa
