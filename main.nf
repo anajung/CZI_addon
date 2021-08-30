@@ -114,8 +114,9 @@ process augur {
 workflow {
     combinedfadata=channel.fromPath( params.combinedfa ).collect()
     pangolin(combinedfadata)
-    nextClade(combinedfadata)
-    joinLineage(pangolin.out, nextClade.out)
+    //nextClade(combinedfadata)
+    nextcladedata=channel.fromPath( params.nextclade )
+    joinLineage(pangolin.out, nextcladedata)
     filter_fa(combinedfadata)
     augur(filter_fa.out)
 }
