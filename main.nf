@@ -93,8 +93,7 @@ process filter_fa {
 }
 
 process augur {
-    //container 'anajung/nextstrain'
-    container 'nextstrain/base'
+    container 'anajung/nextstrain'
     cpus 1
     memory '1 GB'
     publishDir params.outdir, mode: 'copy'
