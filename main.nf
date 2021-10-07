@@ -117,9 +117,11 @@ process pangolin {
 }
 
 process nextClade {
+
     container 'nextstrain/nextclade'
     cpus 4
     memory '6 GB'
+
     publishDir params.outdir, mode: 'copy'
 
     input:
