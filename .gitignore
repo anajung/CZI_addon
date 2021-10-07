@@ -6,3 +6,7 @@ work/
 .nextflow/
 filtered_combined.fa
 MGI_DT_2864258_combined.fa
+snp_annotate.nf
+out-full/
+out-test/
+snp_annotate.nf
