@@ -1,24 +1,6 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-def helpMessage() {
-  log.info"""
-    Usage:
-    The typical command for running the pipeline is as follows:
-    nextflow run anajung/CZI_addon --combinedfa 'combined.fa' --vcf 'sample-variants/*.vcf.gz' --outdir './out'
-    Mandatory arguments:
-    --combinedfa                Path to combined FASTA, must be in quotes
-    --outdir                    Specify path to output directory
-    Optional arguments:
-    --vcf                       Path to .vcf.gz's if variant annotation workflow is wanted
-    """.stripIndent()
-}
-
-// if (params.help) workflow {
-//     helpMessage()
-//     exit 0
-// }
-
 process vcfConvert {
     container 'anajung/pandas'
     cpus 1
@@ -65,7 +47,7 @@ process snpSift {
     container 'quay.io/biocontainers/snpsift:4.3.1t--hdfd78af_3'
     cpus 1
     memory '1 GB'
-    publishDir params.outdir, mode: 'copy'
+    publishDir params.outdir+'/snpEff_results', mode: 'copy'
 
     input:
     tuple path(ann_vcf), val(vcfID)
@@ -83,7 +65,7 @@ process snpSift {
 process add_fasta {
     container 'anajung/pandas'
     cpus 1
-    publishDir params.outdir, mode: 'copy'
+    publishDir params.outdir+'/snpEff_results', mode: 'copy'
 
     input:
     path combined_fa
@@ -184,12 +166,13 @@ process augur {
     path filtered_fa
 
     output:
-    path '*.nwk'
+    path '*tree.nwk'
 
     shell:
     '''
     augur align -s !{filtered_fa}
-    augur tree -a alignment.fasta -o tree.nwk
+    augur tree -a alignment.fasta -o unrooted_tree.nwk
+    augur refine --tree unrooted_tree.nwk --root NC_045512.2_reference --output-tree tree.nwk
     '''
 }
 
@@ -203,13 +186,13 @@ workflow {
     tree_references_fasta = channel.fromPath( params.references_fasta ).collect()
     add_fasta(combinedfadata, tree_references_fasta)
     pangolin(add_fasta.out)
-    //nextclade_data=channel.fromPath('/Users/anajung/Documents/HandleyLab/scripts/CZI_addon/nextclade_data/*').collect()
+    
     nextclade_root_seq = channel.fromPath( params.root_seq ).collect()
     nextclade_tree_json = channel.fromPath( params.tree_json ).collect()
     nextclade_qc = channel.fromPath( params.qc_json ).collect()
     nextclade_genemap = channel.fromPath( params.genemap ).collect()
     nextClade(add_fasta.out, nextclade_root_seq, nextclade_tree_json, nextclade_qc, nextclade_genemap)
-    //nextcladedata=channel.fromPath( params.nextclade )
+
     joinLineage(pangolin.out, nextClade.out)
     filter_fa(add_fasta.out)
     augur(filter_fa.out)
