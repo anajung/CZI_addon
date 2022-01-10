@@ -81,7 +81,7 @@ process add_fasta {
 
 }
 process pangolin {
-    container 'staphb/pangolin'
+    container 'staphb/pangolin:latest'
     cpus 1
     memory '1 GB'
     publishDir params.outdir, mode: 'copy'
@@ -100,7 +100,7 @@ process pangolin {
 
 process nextClade {
 
-    container 'nextstrain/nextclade'
+    container 'nextstrain/nextclade:latest'
     cpus 4
     memory '6 GB'
 
@@ -108,17 +108,14 @@ process nextClade {
 
     input:
     path combined_fa
-    path nextclade_root_seq
-    path nextclade_tree_json
-    path nextclade_qc
-    path nextclade_genemap
 
     output:
     path '*nextclade_lineage.tsv'
 
     shell:
     '''
-    nextclade --input-fasta !{combined_fa} --input-root-seq NC_045512.2.fasta --input-tree tree.json --input-qc-config qc.json --input-gene-map genemap.gff --output-tsv nextclade_lineage.tsv
+    nextclade dataset get --name 'sars-cov-2' --output-dir 'data/sars-cov-2'
+    nextclade --in-order --input-fasta !{combined_fa} --input-dataset data/sars-cov-2 --output-tsv nextclade_lineage.tsv
     '''
 }
 
@@ -186,12 +183,7 @@ workflow {
     tree_references_fasta = channel.fromPath( params.references_fasta ).collect()
     add_fasta(combinedfadata, tree_references_fasta)
     pangolin(add_fasta.out)
-    
-    nextclade_root_seq = channel.fromPath( params.root_seq ).collect()
-    nextclade_tree_json = channel.fromPath( params.tree_json ).collect()
-    nextclade_qc = channel.fromPath( params.qc_json ).collect()
-    nextclade_genemap = channel.fromPath( params.genemap ).collect()
-    nextClade(add_fasta.out, nextclade_root_seq, nextclade_tree_json, nextclade_qc, nextclade_genemap)
+    nextClade(add_fasta.out)
 
     joinLineage(pangolin.out, nextClade.out)
     filter_fa(add_fasta.out)
