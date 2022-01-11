@@ -81,7 +81,7 @@ process add_fasta {
 
 }
 process pangolin {
-    container 'staphb/pangolin:latest'
+    container 'staphb/pangolin:3.1.17-pangolearn-2021-12-06'
     cpus 1
     memory '1 GB'
     publishDir params.outdir, mode: 'copy'
@@ -94,7 +94,7 @@ process pangolin {
 
     shell:
     '''
-    pangolin --usher !{combined_fa} --outfile pangolin_lineage.csv
+    pangolin !{combined_fa} --outfile pangolin_lineage.csv
     '''
 }
 
