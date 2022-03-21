@@ -81,7 +81,7 @@ process add_fasta {
 
 }
 process pangolin {
-    container 'staphb/pangolin:3.1.20-pangolearn-2022-02-02'
+    container 'staphb/pangolin:3.1.20-pangolearn-2022-02-28'
     cpus 1
     memory '1 GB'
     publishDir params.outdir, mode: 'copy'
@@ -174,10 +174,10 @@ process augur {
 }
 
 workflow {
-    vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
-    vcfConvert(vcfdata)
-    snpEff(vcfConvert.out.vcf_converted)
-    snpSift(snpEff.out.vcf_annotated)
+    //vcfdata=channel.fromPath( params.vcf ).map(vcf -> [vcf, vcf.simpleName])
+    //vcfConvert(vcfdata)
+    //snpEff(vcfConvert.out.vcf_converted)
+    //snpSift(snpEff.out.vcf_annotated)
 
     combinedfadata=channel.fromPath( params.combinedfa ).collect()
     tree_references_fasta = channel.fromPath( params.references_fasta ).collect()
