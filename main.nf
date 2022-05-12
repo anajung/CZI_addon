@@ -168,6 +168,8 @@ process augur {
     shell:
     '''
     augur align -s !{filtered_fa}
+    augur tree -a alignment.fasta -o unrooted_tree.nwk
+    augur refine --tree unrooted_tree.nwk --root NC_045512.2_reference --output-tree tree.nwk
     '''
 }
 
@@ -221,6 +223,6 @@ workflow {
     joinLineage(pangolin.out, nextClade.out)
     filter_fa(add_fasta.out)
     augur(filter_fa.out)
-    filter_augur(augur.out)
+    //filter_augur(augur.out)
     //tree(filter_augur.out)
 }
