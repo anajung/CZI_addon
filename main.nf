@@ -81,7 +81,7 @@ process add_fasta {
 
 }
 process pangolin {
-    container 'staphb/pangolin:4.0.6-pdata-1.6'
+    container 'staphb/pangolin:4.0.6-pdata-1.8'
     cpus 1
     memory '1 GB'
     publishDir params.outdir, mode: 'copy'
@@ -163,12 +163,45 @@ process augur {
     path filtered_fa
 
     output:
-    path '*tree.nwk'
+    path 'alignment.fasta'
 
     shell:
     '''
     augur align -s !{filtered_fa}
-    augur tree -a alignment.fasta -o unrooted_tree.nwk
+    '''
+}
+
+process filter_augur {
+    container 'quay.io/biocontainers/biopython:1.78'
+    cpus 1
+    memory '1 GB'
+    publishDir params.outdir, mode: 'copy'
+
+    input:
+    path alignedfasta
+
+    output:
+    path 'augur_filtered_combined.fa'
+
+    shell:
+    template 'augur_filter_fasta.py'
+}
+
+process tree {
+    container 'anajung/nextstrain'
+    cpus 1
+    memory '1 GB'
+    publishDir params.outdir, mode: 'copy'
+
+    input:
+    path filtered_aligned_fa
+
+    output:
+    path '*tree.nwk'
+
+    shell:
+    '''
+    augur tree -a !{filtered_aligned_fa} -o unrooted_tree.nwk
     augur refine --tree unrooted_tree.nwk --root NC_045512.2_reference --output-tree tree.nwk
     '''
 }
@@ -188,4 +221,6 @@ workflow {
     joinLineage(pangolin.out, nextClade.out)
     filter_fa(add_fasta.out)
     augur(filter_fa.out)
+    filter_augur(augur.out)
+    //tree(filter_augur.out)
 }
