@@ -81,7 +81,7 @@ process add_fasta {
 
 }
 process pangolin {
-    container 'staphb/pangolin:4.0.6-pdata-1.8'
+    container 'staphb/pangolin:4.0.6-pdata-1.9'
     cpus 1
     memory '1 GB'
     publishDir params.outdir, mode: 'copy'
@@ -100,7 +100,7 @@ process pangolin {
 
 process nextClade {
 
-    container 'nextstrain/nextclade:latest'
+    container 'nextstrain/nextclade:alpha'
     cpus 4
     memory '6 GB'
 
