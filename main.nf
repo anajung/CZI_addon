@@ -100,7 +100,7 @@ process pangolin {
 
 process nextClade {
 
-    container 'nextstrain/nextclade:prerelease-2'
+    container 'nextstrain/nextclade:latest'
     cpus 4
     memory '6 GB'
 
