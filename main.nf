@@ -221,8 +221,8 @@ workflow {
     nextClade(add_fasta.out)
 
     joinLineage(pangolin.out, nextClade.out)
-    filter_fa(add_fasta.out)
-    augur(filter_fa.out)
+    //filter_fa(add_fasta.out)
+    //augur(filter_fa.out)
     //filter_augur(augur.out)
     //tree(filter_augur.out)
 }
