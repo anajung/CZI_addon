@@ -81,7 +81,7 @@ process add_fasta {
 
 }
 process pangolin {
-    container 'staphb/pangolin:4.1.2-pdata-1.12'
+    container 'staphb/pangolin:4.1.2-pdata-1.13'
     cpus 1
     memory '1 GB'
     publishDir params.outdir, mode: 'copy'
@@ -163,7 +163,7 @@ process augur {
     path filtered_fa
 
     output:
-    path 'alignment.fasta'
+    path 'tree.nwk'
 
     shell:
     '''
