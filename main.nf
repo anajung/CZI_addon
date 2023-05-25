@@ -81,7 +81,7 @@ process add_fasta {
 
 }
 process pangolin {
-    container 'staphb/pangolin:4.2-pdata-1.18.1.1'
+    container '4.2-pdata-1.19'
     cpus 1
     memory '1 GB'
     publishDir params.outdir, mode: 'copy'
